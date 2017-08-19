@@ -1,80 +1,25 @@
 var wifi = require("Wifi");
+var Clock = require("clock").Clock;
 
+var SocketServer = require("./socket_server").socketServer;
+var ReflowOven = require("./reflow_oven").reflowOven;
+var WIFI_SSID = "********";
+var WIFI_PSK = "*********";
 
-var toasterState = {on: false, reflowStage: -1, tempInterval: null};
+// SPI1 is global, and works inside oven without passing it through
+SPI1.setup({ miso: D12, sck: D14, baud: 1000000 });
 
-function connectThermocouple(){
-  SPI1.setup({ miso:D12, sck:D14, baud:1000000 });
-  var max=require("MAX31855").connect(SPI1,D4);
-  return max;
- }
+var oven = new ReflowOven(D4, D2);
 
-var thermocouple = connectThermocouple();
-
-console.log(thermocouple.getTemp());
-
-
-function onPageRequest(req, res) {
-  res.writeHead(200, {'Content-Type': 'text/html'});
-  res.end("<h1> Connect with MobileApp </h1>");
+function onWifiConnectCallback(err) {
+  if (!err) {
+    console.log("Metwork IP: ", wifi.getIP().ip);
+    // pass oven through to socket server to control
+    SocketServer(oven);
+  } else {
+    console.log(err);
+  }
 }
-
-
-
-
-function connectCallback(err){
-   if(!err){
-     console.log("connected? info=",wifi.getIP());
-     wifi.save();
-     if(!toasterState.on) {console.log("toaster is off!");}
-     var server = require('ws').createServer(onPageRequest);
-      server.listen(80);
-      server.on("websocket", function(ws) {
-        ws.on('close', function() {
-          console.log("Connection closed");
-        });
-
-        ws.on('handshake', function() {
-          console.log("Handshake Success");
-        });
-
-        /*
-        ws.on('ping', function() {
-          console.log("Got a ping");
-        });
-
-        ws.on('pong', function() {
-          console.log("Got a pong");
-        });
-         */
-         ws.on('message', function(msg) { 
-           switch(msg.type){
-             case "START_REFLOW":
-               toasterState = {on: true, reflowStage: 0};
-               break;
-             default:
-               console.log("Unknown Message Type");
-               console.log("[WS] "+JSON.stringify(msg));
-            }
-         });
-         //ws.send("Hello from Espruino!");
-     });
-   } else {
-      console.log(err);
-    }
-}
-
-
 
 // connect to wifi, and start listening for commands...
-wifi.connect("*********", {password:"*********"}, connectCallback);
-
-/*
-setInterval(function(){
-  if(toasterState.on){
-    console.log("Toaster is on!");
-  } else {
-    console.log("Toaster is off!");
-  }
-}, 5000);
-*/
+wifi.connect(WIFI_SSID, { password: WIFI_PSK }, onWifiConnectCallback);
