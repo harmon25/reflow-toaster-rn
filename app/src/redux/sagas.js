@@ -1,7 +1,8 @@
 import { AsyncStorage } from "react-native";
 import { select, take, call, put, spawn, takeEvery } from "redux-saga/effects";
+import { delay } from "redux-saga";
 import { LOAD_SETTINGS, PERSIST_SETTINGS } from "./constants";
-import { editSetting, settingsLoaded } from "./actions";
+import { editSetting, settingsLoaded, getStatus } from "./actions";
 
 const getSocket = ({ app: { ovenSocket } }) => ovenSocket;
 
@@ -42,7 +43,15 @@ export function* persistenceSettings(action) {
   yield call(AsyncStorage.setItem, "@Settings:ovenIP", ovenIP);
 }
 
+export function* pollState() {
+  while (true) {
+    yield delay(2500);
+    yield put(getStatus());
+  }
+}
+
 export default function* rootSaga() {
+  yield spawn(pollState);
   yield spawn(socketSaga);
   yield takeEvery(LOAD_SETTINGS, loadSettings);
   yield takeEvery(PERSIST_SETTINGS, persistenceSettings);

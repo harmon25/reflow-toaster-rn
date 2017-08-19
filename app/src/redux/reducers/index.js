@@ -9,6 +9,7 @@ import {
   OVEN_DISCONNECTED,
   SOCKET_ERROR,
   STARTED_REFLOW,
+  STATUS,
   CANCELED_REFLOW
 } from "../constants";
 
@@ -22,6 +23,8 @@ const initialState = {
   connected: false,
   ovenSocket: null,
   socketError: null,
+  currentTemp: null,
+  currentState: null,
   reflowing: false
 };
 
@@ -50,6 +53,13 @@ function appReducer(state = initialState, action) {
 
     case CANCELED_REFLOW:
       return { ...state, reflowing: false };
+
+    case STATUS:
+      return {
+        ...state,
+        currentState: action.payload.state,
+        currentTemp: action.payload.temp
+      };
 
     default:
       return state;

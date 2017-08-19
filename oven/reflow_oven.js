@@ -43,7 +43,10 @@ reflowOven.prototype.getStatus = function() {
   if (this.currentCycle === -1) {
     return { state: "OFF", temp: this.currentTemp };
   } else {
-    return { state: this.cycles[this.currentCycle], temp: this.currentTemp };
+    return {
+      state: this.cycles[this.currentCycle].name,
+      temp: this.currentTemp
+    };
   }
 };
 
@@ -82,7 +85,7 @@ reflowOven.prototype.startReflow = function() {
   this._reflowStartMs = this._clock.getDate().ms;
   this._cycleStartMs = this._reflowStartMs;
   console.log("Starting Reflow!");
-  this._ovenInterval = setInterval(this._ovenIntervalFunc.bind(this), 500);
+  this._ovenInterval = setInterval(this._ovenIntervalFunc.bind(this), 750);
   console.log("Starting reflow cycle: ", this.cycles[this.currentCycle].name);
 };
 
@@ -102,7 +105,7 @@ reflowOven.prototype._stopReflow = function() {
 
 reflowOven.prototype.startReading = function() {
   if (this.TC !== null) {
-    this._tempInterval = setInterval(this._tempIntervalFunc.bind(this), 175);
+    this._tempInterval = setInterval(this._tempIntervalFunc.bind(this), 250);
   } else {
     console.log("Thermocouple not initialized!");
   }

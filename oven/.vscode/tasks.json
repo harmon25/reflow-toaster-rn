@@ -6,7 +6,7 @@
         {
             "taskName": "build",
             "type": "shell",
-            "command": "espruino.cmd -m -t -b 115200 oven_fw.js",
+            "command": "espruino -m -t -b 115200 oven_fw.js",
             "problemMatcher": [],
             "presentation": {
                 "echo": true,
