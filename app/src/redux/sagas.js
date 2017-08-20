@@ -3,28 +3,30 @@ import { select, take, call, put, spawn, takeEvery } from "redux-saga/effects";
 import { delay } from "redux-saga";
 import { LOAD_SETTINGS, PERSIST_SETTINGS } from "./constants";
 import { editSetting, settingsLoaded, getStatus } from "./actions";
+import axios from "axios";
 
-const getSocket = ({ app: { ovenSocket } }) => ovenSocket;
+const getBaseURI = ({ settings: { ovenIP } }) => "http://" + ovenIP;
 
-export function* socketSaga() {
+export function* ovenSaga() {
   while (true) {
-    const command = yield take(["GET_STATUS", "CANCEL_REFLOW", "START_REFLOW"]);
-    const socket = yield select(getSocket);
-    if (socket) {
-      console.log("sending: ", command);
-      socket.send(JSON.stringify(command));
-
-      const response = yield take([
-        "STATUS",
-        "CANCELED_REFLOW",
-        "STARTED_REFLOW"
+    try {
+      const command = yield take([
+        "GET_STATUS",
+        "CANCEL_REFLOW",
+        "START_REFLOW"
       ]);
-      console.log("response: ", response);
+      const baseURI = yield select(getBaseURI);
+      console.log("sending: ", command);
+      const { data } = yield call(axios.get, baseURI + command.payload.path);
+      console.log("response: ", data);
+      yield put(data);
+    } catch (e) {
+      console.log(e);
     }
   }
 }
 
-const getOpenIP = ({ settings: { ovenIP } }) => ovenIP;
+const getOvenIP = ({ settings: { ovenIP } }) => ovenIP;
 
 export function* loadSettings(action) {
   const ovenIP = yield call(AsyncStorage.getItem, "@Settings:ovenIP");
@@ -37,7 +39,7 @@ export function* loadSettings(action) {
 }
 
 export function* persistenceSettings(action) {
-  const ovenIP = yield select(getOpenIP);
+  const ovenIP = yield select(getOvenIP);
   console.log("Persisting:");
   console.log(ovenIP);
   yield call(AsyncStorage.setItem, "@Settings:ovenIP", ovenIP);
@@ -52,7 +54,7 @@ export function* pollState() {
 
 export default function* rootSaga() {
   yield spawn(pollState);
-  yield spawn(socketSaga);
+  yield spawn(ovenSaga);
   yield takeEvery(LOAD_SETTINGS, loadSettings);
   yield takeEvery(PERSIST_SETTINGS, persistenceSettings);
 }

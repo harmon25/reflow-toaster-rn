@@ -1,8 +1,12 @@
 import React, { Component } from "react";
 import { StyleSheet, Text, View, Dimensions } from "react-native";
-import { ActionButton } from "react-native-material-ui";
+import { ActionButton, Card, Subheader } from "react-native-material-ui";
 import { connect } from "react-redux";
 import { startReflow, cancelReflow, getStatus } from "../redux/actions";
+import {
+  AnimatedGaugeProgress,
+  GaugeProgress
+} from "react-native-simple-gauge";
 
 var { height, width } = Dimensions.get("window");
 
@@ -26,7 +30,8 @@ const mapStateToProps = ({
 }) => ({
   reflowing,
   connected,
-  currentTemp
+  currentTemp,
+  currentState
 });
 
 const buttonMap = reflowing =>
@@ -52,34 +57,28 @@ export default class MainPage extends Component {
   };
 
   render() {
-    const { reflowing, connected, currentTemp, currentState } = this.props;
-
+    const { reflowing, connected, currentTemp = 20, currentState } = this.props;
+    const fill = Math.round(currentTemp) / 250 * 100;
     const buttonProps = buttonMap(reflowing);
     return (
       <View style={styles.container}>
-        <View>
-          <Text>
-            {connected ? "Connected!" : "Not Connected!"}
-          </Text>
-        </View>
-
+        <Subheader text={currentState || "Waiting..."} />
         <View style={styles.container2}>
+          <AnimatedGaugeProgress
+            size={250}
+            width={20}
+            fill={fill}
+            rotation={90}
+            cropDegree={90}
+            tintColor="#4682b4"
+            backgroundColor="#b0c4de"
+            strokeCap="circle"
+          />
           <Text>
-            Temp Gauge! {currentTemp}
+            {currentTemp ? Math.round(currentTemp) + "°C" : "Waiting..."}
           </Text>
         </View>
 
-        <View
-          style={{
-            width: width - width * 0.5,
-            height: 50,
-            backgroundColor: "powderblue"
-          }}
-        >
-          <Text>
-            {currentState}
-          </Text>
-        </View>
         <ActionButton
           onPress={reflowing ? this.cancelReflow : this.startReflow}
           {...buttonProps}

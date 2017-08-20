@@ -17,7 +17,7 @@ function reflowOven(CS, ovenPin) {
     { len: 75000, temp: 185, name: "SOAK" },
     { len: 50000, temp: 225, name: "REFLOW" }
   ];
-
+  digitalWrite(this.ovenPin, this.ovenState);
   this.startReading();
 }
 
@@ -91,13 +91,14 @@ reflowOven.prototype.startReflow = function() {
 
 reflowOven.prototype.cancelReflow = function() {
   if (this._ovenInterval) {
+    console.log("Canceling Reflow");
     this._stopReflow();
   }
 };
 
 reflowOven.prototype._stopReflow = function() {
-  console.log("Stopping Reflow");
   clearInterval(this._ovenInterval);
+  this._ovenOff();
   this.currentCycle = -1;
   this._reflowStartMs = null;
   this._cycleStartMs = null;

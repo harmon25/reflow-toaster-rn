@@ -21,8 +21,6 @@ const initialState = {
   activePage: "main",
   alert: initialAlert,
   connected: false,
-  ovenSocket: null,
-  socketError: null,
   currentTemp: null,
   currentState: null,
   reflowing: false
@@ -40,13 +38,10 @@ function appReducer(state = initialState, action) {
       return { ...state, alert: initialAlert };
 
     case OVEN_CONNECTED:
-      return { ...state, connected: true, ovenSocket: action.payload.socket };
+      return { ...state, connected: true };
 
     case OVEN_DISCONNECTED:
-      return { ...state, connected: false, ovenSocket: null };
-
-    case SOCKET_ERROR:
-      return { ...state, socketError: action.payload.error };
+      return { ...state, connected: false };
 
     case STARTED_REFLOW:
       return { ...state, reflowing: true };

@@ -33,7 +33,7 @@ const store = createStore(
 sagaMiddleware.run(rootSaga);
 
 //store.dispatch(loadSettings());
-
+/*
 const routes = {
   main: {
     RouteComponent: MainPage,
@@ -57,6 +57,23 @@ const routes = {
     index: 1
   }
 };
+*/
+const routes = {
+  main: {
+    RouteComponent: MainPage,
+    navLabel: "Main",
+    navIcon: "home",
+    name: "main",
+    index: 0
+  },
+  settings: {
+    RouteComponent: SettingsPage,
+    navLabel: "Settings",
+    navIcon: "settings",
+    name: "settings",
+    index: 1
+  }
+};
 
 const navActions = navigateTo =>
   Object.keys(routes)
@@ -64,7 +81,7 @@ const navActions = navigateTo =>
     .sort((a, b) => {
       return a.index - b.index;
     })
-    .map(r => (
+    .map(r =>
       <BottomNavigation.Action
         style={{ container: { flex: 1 } }}
         key={r.name}
@@ -72,35 +89,36 @@ const navActions = navigateTo =>
         label={r.navLabel}
         onPress={() => navigateTo(r.name)}
       />
-    ));
+    );
 
 const mapStateToProps = ({ app: { activePage } }) => ({ activePage });
 
 @connect(mapStateToProps, { navigateTo })
-class AppRoot extends React.Component {
+class App extends React.Component {
   render() {
     const { activePage, navigateTo } = this.props;
     const navItems = navActions(navigateTo);
     const { RouteComponent } = routes[activePage];
 
     return (
-      <View style={styles.container}>
-        <Toolbar leftElement="whatshot" centerElement="Reflow Controller" />
-        <RouteComponent />
+      <ThemeProvider>
+        <View style={styles.container}>
+          <Toolbar leftElement="whatshot" centerElement="Reflow Controller" />
+          <RouteComponent />
 
-        <BottomNavigation
-          style={{
-            container: {
-              alignItems: "center"
-            }
-          }}
-          active={activePage}
-          hidden={false}
-        >
-          {navItems}
-        </BottomNavigation>
-
-      </View>
+          <BottomNavigation
+            style={{
+              container: {
+                alignItems: "center"
+              }
+            }}
+            active={activePage}
+            hidden={false}
+          >
+            {navItems}
+          </BottomNavigation>
+        </View>
+      </ThemeProvider>
     );
   }
 }
@@ -127,7 +145,7 @@ function connectSocket(oven_ip, dispatch) {
   };
 }
 
-export default class App extends React.Component {
+export default class AppRoot extends React.Component {
   state = { loaded: false };
   async componentDidMount() {
     await Font.loadAsync({
@@ -137,8 +155,6 @@ export default class App extends React.Component {
     const ovenIP = await AsyncStorage.getItem("@Settings:ovenIP");
     store.dispatch(editSetting("ovenIP", ovenIP));
 
-    connectSocket(ovenIP, store.dispatch);
-
     this.setState({ loaded: true });
   }
 
@@ -147,9 +163,7 @@ export default class App extends React.Component {
 
     return (
       <Provider store={store}>
-        <ThemeProvider>
-          {loaded ? <AppRoot /> : <AppLoading />}
-        </ThemeProvider>
+        {loaded ? <App /> : <AppLoading />}
       </Provider>
     );
   }

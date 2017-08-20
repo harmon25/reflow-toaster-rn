@@ -8,23 +8,27 @@ import {
   LOADED_SETTINGS,
   OVEN_CONNECTED,
   OVEN_DISCONNECTED,
-  SOCKET_ERROR,
   START_REFLOW,
   CANCEL_REFLOW,
   GET_STATUS
 } from "./constants";
 
-export const startReflow = () => ({ type: START_REFLOW, payload: {} });
-export const cancelReflow = () => ({ type: CANCEL_REFLOW, payload: {} });
-export const getStatus = () => ({ type: GET_STATUS, payload: {} });
-
-export const socketError = error => ({
-  type: SOCKET_ERROR,
-  payload: { error }
+export const startReflow = () => ({
+  type: START_REFLOW,
+  payload: { path: "/start" }
 });
-export const ovenConnected = socket => ({
+export const cancelReflow = () => ({
+  type: CANCEL_REFLOW,
+  payload: { path: "/cancel" }
+});
+export const getStatus = () => ({
+  type: GET_STATUS,
+  payload: { path: "/status" }
+});
+
+export const ovenConnected = () => ({
   type: OVEN_CONNECTED,
-  payload: { socket }
+  payload: {}
 });
 export const ovenDisconnected = () => ({ type: OVEN_DISCONNECTED });
 
